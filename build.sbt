@@ -3,7 +3,6 @@ import sbt.Keys.resolvers
 import sbt.Resolver
 
 ThisBuild / scalaVersion := "2.13.7"
-ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / organization := "xyz.exlevan"
 ThisBuild / organizationName := "Oleksii Levan"
 ThisBuild / scalacOptions := List(
@@ -15,6 +14,7 @@ ThisBuild / scalacOptions := List(
   "-Xlint",
   "-Ywarn-value-discard"
 )
+ThisBuild / versionScheme := Some("semver-spec")
 
 githubTokenSource := TokenSource.Environment("GITHUB_TOKEN") ||
   TokenSource.GitConfig("github.token")
