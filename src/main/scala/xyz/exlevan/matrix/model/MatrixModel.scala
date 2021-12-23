@@ -1,10 +1,19 @@
 package xyz.exlevan.matrix.model
 
-case class Dimensions(rows: Int, columns: Int)
+case class Dimensions(rows: Int, columns: Int) {
+
+  def foreach(f: Int => Int => Unit): Unit =
+    0.until(rows).foreach { i =>
+      val g = f(i)
+      0.until(columns).foreach { j =>
+        g(j)
+      }
+    }
+}
 
 case class Matrix private (values: Array[Array[Double]]) {
 
-  def dimensions() = Dimensions(values.length, values(0).length)
+  def dimensions(): Dimensions = Dimensions(values.length, values(0).length)
 }
 
 object Matrix {

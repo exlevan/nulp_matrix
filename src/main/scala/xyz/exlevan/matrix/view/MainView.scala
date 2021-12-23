@@ -18,13 +18,13 @@ class MainView extends BoxPanel(Orientation.Vertical) {
       columns: Option[Int] = None
   ): Option[Dimensions] = {
 
-    val textFieldRows = new TextField(3)
+    val textFieldRows = new TextField(2)
     rows.foreach { x =>
       textFieldRows.text = x.toString
       textFieldRows.enabled = false
     }
 
-    val textFieldColumns = new TextField(3)
+    val textFieldColumns = new TextField(2)
     columns.foreach { x =>
       textFieldColumns.text = x.toString
       textFieldColumns.enabled = false
@@ -97,7 +97,7 @@ class MainView extends BoxPanel(Orientation.Vertical) {
 
     val textFields = Array.fill(dimensions.rows)(
       Array.fill(dimensions.columns)(
-        new TextField(3)
+        new TextField(4)
       )
     )
 
@@ -111,12 +111,10 @@ class MainView extends BoxPanel(Orientation.Vertical) {
         layout(component) = c
       }
 
-      0.until(dimensions.rows).foreach { i =>
-        0.until(dimensions.columns).foreach { j =>
-          addComponent(textFields(i)(j)) { c =>
-            c.grid = (j, i)
-            c.insets = new Insets(2, 5, 2, 5)
-          }
+      dimensions.foreach { i => j =>
+        addComponent(textFields(i)(j)) { c =>
+          c.grid = (j, i)
+          c.insets = new Insets(2, 5, 2, 5)
         }
       }
     }
@@ -137,11 +135,12 @@ class MainView extends BoxPanel(Orientation.Vertical) {
       case Result.Ok =>
         Try {
           val matrix = new Array[Array[Double]](dimensions.rows)
-          0.until(dimensions.rows).foreach { i =>
+          dimensions.foreach { i =>
             matrix(i) = new Array[Double](dimensions.columns)
-            0.until(dimensions.columns).foreach { j =>
+
+            { j =>
               val number = textFields(i)(j).text.trim.toDouble
-              if (number.isInfinite || number.isNaN) {
+              if (!number.isFinite) {
                 sys.error("Неприпустиме значення")
               }
               matrix(i)(j) = number
@@ -155,9 +154,85 @@ class MainView extends BoxPanel(Orientation.Vertical) {
     }
   }
 
-  def inputScalar(): Option[Double] = ???
+  def inputScalar(): Option[Double] = {
 
-  def showScalar(scalar: Double): Unit = ???
+    val textField = new TextField(4)
+
+    val dialogContents: GridBagPanel = new GridBagPanel {
+
+      def addComponent(
+          component: Component
+      )(modifyConstraints: Constraints => Unit): Unit = {
+        val c = new Constraints
+        modifyConstraints(c)
+        layout(component) = c
+      }
+
+      addComponent(new Label("Скаляр:")) { c =>
+        c.grid = (1, 1)
+        c.anchor = Anchor.West
+        c.insets = new Insets(0, 0, 0, 10)
+      }
+
+      addComponent(textField) { c =>
+        c.grid = (2, 1)
+        c.anchor = Anchor.West
+      }
+    }
+
+    val pressedButton =
+      JOptionPane.showOptionDialog(
+        null,
+        dialogContents.peer,
+        "Введіть значення скаляра",
+        Options.OkCancel.id,
+        Message.Question.id,
+        Swing.wrapIcon(EmptyIcon),
+        null,
+        null
+      )
+
+    Result(pressedButton) match {
+      case Result.Ok =>
+        val scalar = textField.text.trim.toDoubleOption.filter(_.isFinite)
+        scalar.tap(x => if (x.isEmpty) showError("Помилка зчитування даних"))
+      case _ => None
+    }
+  }
+
+  def showDeterminant(determinant: Double): Unit = {
+
+    val dialogContents: GridBagPanel = new GridBagPanel {
+
+      def addComponent(
+          component: Component
+      )(modifyConstraints: Constraints => Unit): Unit = {
+        val c = new Constraints
+        modifyConstraints(c)
+        layout(component) = c
+      }
+
+      val textField = new TextField(f"$determinant%.4g", 4)
+      textField.enabled = false
+      addComponent(textField) { c =>
+        c.grid = (1, 1)
+        c.anchor = Anchor.West
+        c.insets = new Insets(2, 5, 2, 5)
+      }
+    }
+
+    val _ = JOptionPane.showOptionDialog(
+      null,
+      dialogContents.peer,
+      "Детермінант",
+      Options.Default.id,
+      Message.Info.id,
+      Swing.wrapIcon(EmptyIcon),
+      null,
+      null
+    )
+    ()
+  }
 
   def showMatrix(matrix: Matrix): Unit = {
 
@@ -173,35 +248,32 @@ class MainView extends BoxPanel(Orientation.Vertical) {
         layout(component) = c
       }
 
-      0.until(dimensions.rows).foreach { i =>
-        0.until(dimensions.columns).foreach { j =>
-          val textField = new TextField(matrix.values(i)(j).toString, 3)
-          textField.enabled = false
-          addComponent(textField) { c =>
-            c.grid = (j, i)
-            c.insets = new Insets(2, 5, 2, 5)
-          }
+      dimensions.foreach { i => j =>
+        val text = f"${matrix.values(i)(j)}%.4g"
+        val textField = new TextField(text, 4)
+        textField.enabled = false
+        addComponent(textField) { c =>
+          c.grid = (j, i)
+          c.insets = new Insets(2, 5, 2, 5)
         }
       }
     }
 
-    val _ =
-      JOptionPane.showOptionDialog(
-        null,
-        dialogContents.peer,
-        "Матриця",
-        Options.Default.id,
-        Message.Info.id,
-        Swing.wrapIcon(EmptyIcon),
-        null,
-        null
-      )
-
+    val _ = JOptionPane.showOptionDialog(
+      null,
+      dialogContents.peer,
+      "Матриця",
+      Options.Default.id,
+      Message.Info.id,
+      Swing.wrapIcon(EmptyIcon),
+      null,
+      null
+    )
     ()
   }
 
-  def showError(error: String): Unit =
-    JOptionPane.showOptionDialog(
+  def showError(error: String): Unit = {
+    val _ = JOptionPane.showOptionDialog(
       null,
       error,
       "Виникла помилка",
@@ -211,6 +283,8 @@ class MainView extends BoxPanel(Orientation.Vertical) {
       null,
       null
     )
+    ()
+  }
 
   val operationsView = new OperationsView
   val panel = new BoxPanel(Orientation.NoOrientation) {
