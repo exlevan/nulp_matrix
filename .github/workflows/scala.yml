@@ -1,0 +1,28 @@
+name: Scala CI
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup JVM and tooling
+        uses: actions/setup-java@v2
+        with:
+          distribution: zulu
+          java-version: 11
+          java-package: jre
+
+      - name: Setup artefact caching
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.ivy2/cache
+            ~/.sbt
+            ~/.cache/coursier
+          key: ${{ runner.os }}-${{ hashFiles('project/build.properties') }}-${{ hashFiles('**/*.sbt') }}
+
+      - name: Sbt Code format, test
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_WRITE_PACKAGES_SCOPE }}
+        run: sbt scalafmtSbtCheck scalafmtCheck Test/scalafmtCheck test
