@@ -1,6 +1,6 @@
 package xyz.exlevan.matrix.controller
 
-import xyz.exlevan.matrix.model.{Dimensions, Matrix}
+import xyz.exlevan.matrix.model.Matrix
 import xyz.exlevan.matrix.Matrix.view
 
 class MatrixController {
@@ -29,9 +29,7 @@ class MatrixController {
   def multiplyByScalarAction(): Unit =
     withDefinedMatrix { mx =>
       view.inputScalar().foreach { x =>
-        mx.dimensions().foreach { i => j =>
-          mx.values(i)(j) *= x
-        }
+        MatrixCalculator.multiplyByScalar(mx, x)
         view.showMatrix(mx)
       }
     }
@@ -39,9 +37,7 @@ class MatrixController {
   def divideByScalarAction(): Unit =
     withDefinedMatrix { mx =>
       view.inputScalar().foreach { x =>
-        mx.dimensions().foreach { i => j =>
-          mx.values(i)(j) /= x
-        }
+        MatrixCalculator.divideByScalar(mx, x)
         view.showMatrix(mx)
       }
     }
@@ -49,9 +45,7 @@ class MatrixController {
   def addMatrixAction(): Unit =
     withDefinedMatrix { mx1 =>
       view.inputMatrix(mx1.dimensions()).foreach { mx2 =>
-        mx1.dimensions().foreach { i => j =>
-          mx1.values(i)(j) += mx2.values(i)(j)
-        }
+        MatrixCalculator.addMatrices(mx1, mx2)
       }
       view.showMatrix(mx1)
     }
@@ -59,9 +53,7 @@ class MatrixController {
   def subtractMatrixAction(): Unit =
     withDefinedMatrix { mx1 =>
       view.inputMatrix(mx1.dimensions()).foreach { mx2 =>
-        mx1.dimensions().foreach { i => j =>
-          mx1.values(i)(j) -= mx2.values(i)(j)
-        }
+        MatrixCalculator.subtractMatrices(mx1, mx2)
       }
       view.showMatrix(mx1)
     }
@@ -75,24 +67,7 @@ class MatrixController {
       } yield mx2
 
       input.foreach { mx2 =>
-        val dim3 = Dimensions(
-          rows = mx1.dimensions().rows,
-          columns = mx2.dimensions().columns
-        )
-        val mx3 = new Array[Array[Double]](dim3.rows)
-        dim3.foreach { i =>
-          mx3(i) = new Array[Double](dim3.columns)
-
-          { j =>
-            mx3(i)(j) = 0
-              .until(mx1.dimensions().columns)
-              .map { k =>
-                mx1.values(i)(k) * mx2.values(k)(j)
-              }
-              .sum
-          }
-        }
-        val mx = Matrix(dim3, mx3).toOption.get
+        val mx = MatrixCalculator.multiplyMatrices(mx1, mx2)
         _matrix = Some(mx)
         view.showMatrix(mx)
       }
@@ -106,26 +81,9 @@ class MatrixController {
           "Детермінант можливо обчислити\nлише для квадратної матриці"
         )
       } else {
-        val det = calcDeterminant(mx.values, 0, Set.empty)
+        val det = MatrixCalculator.calcDeterminant(mx.values)
         view.showDeterminant(det)
       }
     }
 
-  def calcDeterminant(
-      values: Array[Array[Double]],
-      i: Int,
-      skipJ: Set[Int]
-  ): Double = {
-    val n = values.length
-    val js = 0.until(n).filterNot(skipJ.contains).toList
-    if (i == n - 1) {
-      val (j :: Nil): List[Int] @unchecked = js
-      values(i)(j)
-    } else {
-      js.zipWithIndex.map { case (j, mappedJ) =>
-        val sign = if ((i + mappedJ) % 2 == 0) 1.0 else -1.0
-        sign * values(i)(j) * calcDeterminant(values, i + 1, skipJ + j)
-      }.sum
-    }
-  }
 }

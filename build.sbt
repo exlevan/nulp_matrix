@@ -28,6 +28,7 @@ lazy val root = (project in file("."))
     libraryDependencies ++= List(
       compilerPlugin(betterMonadicFor),
       scalaSwing,
-      scalaTest % Test
+      scalaTest % Test,
+      scalaMock % Test
     )
   )

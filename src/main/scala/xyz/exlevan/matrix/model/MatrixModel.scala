@@ -14,6 +14,18 @@ case class Dimensions(rows: Int, columns: Int) {
 case class Matrix private (values: Array[Array[Double]]) {
 
   def dimensions(): Dimensions = Dimensions(values.length, values(0).length)
+
+  override def equals(obj: Any): Boolean = obj match {
+    case mx: Matrix =>
+      values.length == mx.values.length &&
+        values.indices.forall { i =>
+          values(i).length == mx.values(i).length &&
+          values(i).indices.forall { j =>
+            values(i)(j) == mx.values(i)(j)
+          }
+        }
+    case _ => false
+  }
 }
 
 object Matrix {
