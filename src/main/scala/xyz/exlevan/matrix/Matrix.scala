@@ -10,17 +10,18 @@ import scala.util.Try
 
 object Matrix extends SimpleSwingApplication {
 
-  val controller = new MatrixController
-
   Try(
     UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel")
   ).orElse {
     Try(UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName))
   }.getOrElse(())
 
+  val controller = new MatrixController
+  val view = new MainView
+
   lazy val frame: MainFrame = new MainFrame {
     title = "Операції над матрицями"
-    contents = new MainView(controller)
+    contents = view
   }
 
   def top: Frame = {

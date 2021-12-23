@@ -1,36 +1,38 @@
 package xyz.exlevan.matrix.controller
 
 import xyz.exlevan.matrix.model.{Dimensions, Matrix}
+import xyz.exlevan.matrix.Matrix.view
 
 class MatrixController {
 
-  private var state: MatrixControllerState = MatrixControllerState(
-    dimensions1 = None,
-    matrix1 = None,
-    dimensions2 = None,
-    matrix2 = None
-  )
+  private var _matrix: Option[Matrix] = None
 
-  def enterMatrix(): Unit = ???
+  def enterMatrixAction(): Unit = {
 
-  def showMatrix(): Unit = ???
+    val input = for {
+      dim <- view.inputDimensions()
+      mx <- view.inputMatrix(dim)
+    } yield mx
 
-  def multiplyByScalar(): Unit = ???
+    input.foreach { mx =>
+      _matrix = Some(mx)
+    }
+  }
 
-  def divideByScalar(): Unit = ???
+  def showMatrixAction(): Unit = _matrix match {
+    case None     => view.showError("Матриця не задана")
+    case Some(mx) => view.showMatrix(mx)
+  }
 
-  def addMatrix(): Unit = ???
+  def multiplyByScalarAction(): Unit = ???
 
-  def subtractMatrix(): Unit = ???
+  def divideByScalarAction(): Unit = ???
 
-  def multiplyByMatrix(): Unit = ???
+  def addMatrixAction(): Unit = ???
 
-  def calculateDeterminant(): Unit = ???
+  def subtractMatrixAction(): Unit = ???
+
+  def multiplyByMatrixAction(): Unit = ???
+
+  def calculateDeterminantAction(): Unit = ???
 }
-
-case class MatrixControllerState(
-    dimensions1: Option[Dimensions],
-    matrix1: Option[Matrix],
-    dimensions2: Option[Dimensions],
-    matrix2: Option[Matrix]
-)

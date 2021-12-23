@@ -18,6 +18,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "matrix",
     libraryDependencies ++= List(
+      compilerPlugin(betterMonadicFor),
       scalaSwing,
       scalaTest % Test
     )
