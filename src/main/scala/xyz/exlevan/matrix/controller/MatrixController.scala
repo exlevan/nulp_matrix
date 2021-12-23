@@ -119,7 +119,7 @@ class MatrixController {
     val n = values.length
     val js = 0.until(n).filterNot(skipJ.contains).toList
     if (i == n - 1) {
-      val j :: Nil = js
+      val (j :: Nil): List[Int] @unchecked = js
       values(i)(j)
     } else {
       js.zipWithIndex.map { case (j, mappedJ) =>
